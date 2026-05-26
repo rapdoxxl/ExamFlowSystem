@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SYSTEM_ADMIN
+  CLASS_ADMIN
+  STUDENT
+}
+
+enum RegistrationStatus {
+  DRAFT
+  SUBMITTED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  username     String        @unique
+  passwordHash String?
+  role         UserRole      @default(STUDENT)
+  classId      String?
+  class        Class?        @relation(fields: [classId], references: [id], onDelete: SetNull)
+  registration Registration?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Class {
+  id            String         @id @default(cuid())
+  department    String         @default("")
+  grade         String         @default("")
+  name          String
+  users         User[]
+  registrations Registration[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([department, grade, name])
+}
+
+model Registration {
+  id                String             @id @default(cuid())
+  userId            String             @unique
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classId           String?
+  class             Class?             @relation(fields: [classId], references: [id], onDelete: SetNull)
+  idNumber          String             @unique
+  queryPasswordHash String
+  name              String?
+  studentNumber     String?
+  gender            String?
+  birthDate         String?
+  phone             String?
+  address           String?
+  subject           String?
+  status            RegistrationStatus @default(DRAFT)
+  reviewStatus      ReviewStatus       @default(PENDING)
+  reviewReason      String?
+  reviewedAt        DateTime?
+  paymentStatus     PaymentStatus      @default(UNPAID)
+  paymentPaidAt     DateTime?
+  receiptNo         String?
+  paymentRemark     String?
+  photoPath         String?
+  submittedAt       DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model SystemSetting {
+  id               String   @id @default("main")
+  registrationOpen Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
+}
