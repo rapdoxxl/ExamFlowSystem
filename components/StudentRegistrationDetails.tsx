@@ -1,4 +1,5 @@
 import { getReviewStatusClass, getStudentRegistrationStatusLabel } from "@/lib/reviewStatus";
+import { RegistrationHealthCard } from "@/components/RegistrationHealth";
 
 type RegistrationDetails = {
   idNumber: string;
@@ -7,6 +8,7 @@ type RegistrationDetails = {
   gender: string | null;
   birthDate: string | null;
   phone: string | null;
+  photoPath?: string | null;
   address: string | null;
   subject: string | null;
   status: string;
@@ -28,6 +30,7 @@ export function StudentRegistrationDetails({ registration, open }: { registratio
       {registration.status === "SUBMITTED" && registration.reviewStatus === "PENDING" && <div className="notice">报名信息已提交，当前正在等待管理员审核，请留意后续审核结果。</div>}
       {registration.status === "SUBMITTED" && registration.reviewStatus === "APPROVED" && <div className="success">报名信息已审核通过，当前状态为报名成功。</div>}
       {registration.status === "SUBMITTED" && registration.reviewStatus === "REJECTED" && <div className="error">审核未通过：{registration.reviewReason || "管理员未填写原因，请联系班级管理员或系统管理员。"}</div>}
+      <RegistrationHealthCard registration={registration} />
       <table><tbody>
         <tr><th>姓名</th><td>{registration.name}</td></tr>
         <tr><th>身份证号</th><td>{registration.idNumber}</td></tr>

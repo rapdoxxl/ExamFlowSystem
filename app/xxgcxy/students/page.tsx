@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ClassAdminButton, DeleteRegistrationButton, PaymentBulkActions, PaymentToggleButton, ReviewBulkActions, ReviewButtons, StudentEditButton } from "@/components/AdminActions";
 import { ClassFilterCombobox } from "@/components/ClassFilterCombobox";
+import { RegistrationHealthInline } from "@/components/RegistrationHealth";
 import { requireRole } from "@/lib/auth";
 import { buildClassDisplayName } from "@/lib/classes";
 import { getAdminReviewStatusLabel, getPaymentStatusClass, getPaymentStatusLabel, getReviewStatusClass } from "@/lib/reviewStatus";
@@ -130,7 +131,7 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
             <td><strong className="student-name">{item.name || "未填写姓名"}</strong><span className="student-detail">{item.studentNumber || "未填写学号"}</span></td>
             <td><span className="student-identity">{item.idNumber}</span><span className="student-detail">{item.phone || "未填写手机号"}</span></td>
             <td><span className="student-class">{item.class ? buildClassDisplayName(item.class) : "未分配班级"}</span><span className="student-detail">{item.subject || "未选择科目"}</span></td>
-            <td><span className={`status-badge ${getReviewStatusClass(item.status, item.reviewStatus)}`}>{getAdminReviewStatusLabel(item.status, item.reviewStatus)}</span>{item.reviewStatus === "REJECTED" && item.reviewReason && <div className="small">原因：{item.reviewReason}</div>}</td>
+            <td><span className={`status-badge ${getReviewStatusClass(item.status, item.reviewStatus)}`}>{getAdminReviewStatusLabel(item.status, item.reviewStatus)}</span>{item.reviewStatus === "REJECTED" && item.reviewReason && <div className="small">原因：{item.reviewReason}</div>}<RegistrationHealthInline registration={item} /></td>
             <td><span className={`status-badge ${getPaymentStatusClass(item.paymentStatus)}`}>{getPaymentStatusLabel(item.paymentStatus)}</span>{item.paymentStatus === "PAID" && item.paymentPaidAt && <span className="student-detail">{new Date(item.paymentPaidAt).toLocaleDateString("zh-CN")}</span>}</td>
             <td>{item.photoPath ? <img className="student-photo-preview" src={`/api/admin/registrations/photo?id=${encodeURIComponent(item.id)}`} alt={`${item.name || item.idNumber}电子照片`} loading="lazy" /> : <span className="small">未上传</span>}</td><td>{item.user.role === "CLASS_ADMIN" ? "班级管理员" : "学生"}</td>
             <td><div className="students-row-actions"><ReviewButtons id={item.id} status={item.status} reviewStatus={item.reviewStatus} /><PaymentToggleButton id={item.id} paymentStatus={item.paymentStatus} /><StudentEditButton registration={{ id: item.id, idNumber: item.idNumber, name: item.name, studentNumber: item.studentNumber, phone: item.phone, address: item.address, subject: item.subject, classId: item.classId, className: item.class ? buildClassDisplayName(item.class) : null }} classes={classes} /><ClassAdminButton id={item.id} isClassAdmin={item.user.role === "CLASS_ADMIN"} classId={item.classId} /><DeleteRegistrationButton id={item.id} idNumber={item.idNumber} name={item.name} isClassAdmin={item.user.role === "CLASS_ADMIN"} /></div></td>
