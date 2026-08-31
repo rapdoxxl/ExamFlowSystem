@@ -101,8 +101,7 @@ export async function DELETE(request: NextRequest) {
   if (!subject) return jsonError("科目不存在", 404);
   const used = await prisma.registration.count({ where: { subject: subject.name } });
   if (used > 0) {
-    const updated = await prisma.subject.update({ where: { id }, data: { enabled: false } });
-    return jsonOk({ disabled: true, subject: updated });
+    return jsonError(`该科目已有 ${used} 名学生报名，不能删除；如后续不再开放该科目，请使用停用功能。`, 409);
   }
   await prisma.subject.delete({ where: { id } });
   return jsonOk({ deleted: true });

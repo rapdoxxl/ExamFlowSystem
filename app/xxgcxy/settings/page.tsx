@@ -10,7 +10,10 @@ export default async function SettingsPage() {
   const [settings, subjects] = await Promise.all([getSettings(), listSubjects(true)]);
   const subjectCounts = new Map((await Promise.all(subjects.map(async (subject) => [
     subject.id,
-    await prisma.registration.count({ where: { subject: subject.name, status: "SUBMITTED" } })
+    {
+      submitted: await prisma.registration.count({ where: { subject: subject.name, status: "SUBMITTED" } }),
+      total: await prisma.registration.count({ where: { subject: subject.name } })
+    }
   ] as const))));
   return (
     <main className="container grid">
@@ -35,7 +38,7 @@ export default async function SettingsPage() {
         <SubjectCreateForm />
         <div className="table-scroll">
           <table>
-            <thead><tr><th>状态</th><th>科目名称</th><th>容量</th><th>共享限额组</th><th>已提交人数</th><th>操作</th></tr></thead>
+            <thead><tr><th>状态</th><th>科目名称</th><th>容量</th><th>共享限额组</th><th>报名人数</th><th>操作</th></tr></thead>
             <tbody>
               {subjects.map((subject) => (
                 <tr key={subject.id}>
@@ -43,8 +46,11 @@ export default async function SettingsPage() {
                   <td>{subject.name}</td>
                   <td>{subject.capacity}</td>
                   <td>{subject.quotaGroup ? `${subject.quotaGroupName || subject.quotaGroup}（${subject.quotaGroup}）` : "单科独立"}</td>
-                  <td>{subjectCounts.get(subject.id) || 0}</td>
-                  <td><SubjectEditButtons subject={subject} used={subjectCounts.get(subject.id) || 0} /></td>
+                  <td>
+                    <b>{subjectCounts.get(subject.id)?.total || 0}</b>
+                    <div className="small">已提交 {subjectCounts.get(subject.id)?.submitted || 0}</div>
+                  </td>
+                  <td><SubjectEditButtons subject={subject} used={subjectCounts.get(subject.id)?.total || 0} /></td>
                 </tr>
               ))}
             </tbody>

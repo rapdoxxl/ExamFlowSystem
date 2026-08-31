@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 export function ClassAdminButton({ id, isClassAdmin, classId }: { id: string; isClassAdmin: boolean; classId?: string | null }) {
   async function toggle() {
     const res = await fetch("/api/admin/registrations", {
@@ -230,7 +232,31 @@ type SubjectRow = {
   sortOrder: number;
 };
 
+function SubjectDialog({ children, onClose, title }: { children: React.ReactNode; onClose: () => void; title: string }) {
+  return (
+    <div className="modal-backdrop" role="presentation" onClick={onClose}>
+      <section className="modal-panel subject-modal" role="dialog" aria-modal="true" aria-labelledby="subject-dialog-title" onClick={(event) => event.stopPropagation()}>
+        <h2 id="subject-dialog-title">{title}</h2>
+        {children}
+      </section>
+    </div>
+  );
+}
+
+function SubjectFormFields({ subject }: { subject?: SubjectRow }) {
+  return (
+    <div className="subject-dialog-grid">
+      <label>科目名称<input name="name" defaultValue={subject?.name || ""} placeholder="例如：中级：AutoCAD计算机辅助设计" required /></label>
+      <label>容量<input name="capacity" defaultValue={subject?.capacity ?? 1} placeholder="容量" type="number" min="1" required /></label>
+      <label>共享限额组<input name="quotaGroup" defaultValue={subject?.quotaGroup || ""} placeholder="选填；同组科目共用容量" /></label>
+      <label>共享组名称<input name="quotaGroupName" defaultValue={subject?.quotaGroupName || ""} placeholder="选填；例如 CAD 中级+高级" /></label>
+    </div>
+  );
+}
+
 export function SubjectCreateForm() {
+  const [open, setOpen] = useState(false);
+
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -244,18 +270,30 @@ export function SubjectCreateForm() {
     alert("科目已新增。");
     window.location.reload();
   }
+
   return (
-    <form className="subject-form" onSubmit={submit}>
-      <input name="name" placeholder="科目名称" required />
-      <input name="capacity" placeholder="容量" type="number" min="1" required />
-      <input name="quotaGroup" placeholder="共享限额组（选填）" />
-      <input name="quotaGroupName" placeholder="共享组名称（选填）" />
-      <button>新增科目</button>
-    </form>
+    <>
+      <div className="actions">
+        <button type="button" onClick={() => setOpen(true)}>新增科目</button>
+      </div>
+      {open && (
+        <SubjectDialog title="新增科目" onClose={() => setOpen(false)}>
+          <form className="subject-dialog-form" onSubmit={submit}>
+            <SubjectFormFields />
+            <div className="modal-actions">
+              <button type="button" className="secondary" onClick={() => setOpen(false)}>取消</button>
+              <button type="submit">保存科目</button>
+            </div>
+          </form>
+        </SubjectDialog>
+      )}
+    </>
   );
 }
 
 export function SubjectEditButtons({ subject, used }: { subject: SubjectRow; used: number }) {
+  const [editing, setEditing] = useState(false);
+
   async function save(body: Record<string, unknown>) {
     const res = await fetch("/api/admin/subjects", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: subject.id, ...body }) });
     const json = await res.json();
@@ -267,16 +305,9 @@ export function SubjectEditButtons({ subject, used }: { subject: SubjectRow; use
     window.location.reload();
   }
 
-  async function edit() {
-    const name = prompt("科目名称", subject.name);
-    if (name === null) return;
-    const capacity = prompt("容量", String(subject.capacity));
-    if (capacity === null) return;
-    const quotaGroup = prompt("共享限额组（选填；同组科目共用容量）", subject.quotaGroup || "");
-    if (quotaGroup === null) return;
-    const quotaGroupName = prompt("共享组名称（选填）", subject.quotaGroupName || "");
-    if (quotaGroupName === null) return;
-    await save({ name, capacity, quotaGroup, quotaGroupName });
+  async function submitEdit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await save(Object.fromEntries(new FormData(event.currentTarget).entries()));
   }
 
   async function toggle() {
@@ -286,8 +317,7 @@ export function SubjectEditButtons({ subject, used }: { subject: SubjectRow; use
 
   async function remove() {
     if (used > 0) {
-      alert("该科目已有报名记录，不能直接删除；系统将改为停用以保留历史数据。");
-      await save({ enabled: false });
+      alert(`该科目已有 ${used} 名学生报名，不能删除。如后续不再开放该科目，请使用“停用”。`);
       return;
     }
     if (!confirm(`确认删除科目“${subject.name}”？`)) return;
@@ -302,11 +332,24 @@ export function SubjectEditButtons({ subject, used }: { subject: SubjectRow; use
   }
 
   return (
-    <span className="actions">
-      <button type="button" className="compact secondary" onClick={edit}>编辑</button>
-      <button type="button" className="compact secondary" onClick={toggle}>{subject.enabled ? "停用" : "启用"}</button>
-      <button type="button" className="compact danger" onClick={remove}>删除</button>
-    </span>
+    <>
+      <span className="actions">
+        <button type="button" className="compact secondary" onClick={() => setEditing(true)}>编辑</button>
+        <button type="button" className="compact secondary" onClick={toggle}>{subject.enabled ? "停用" : "启用"}</button>
+        <button type="button" className="compact danger" onClick={remove}>删除</button>
+      </span>
+      {editing && (
+        <SubjectDialog title="编辑科目" onClose={() => setEditing(false)}>
+          <form className="subject-dialog-form" onSubmit={submitEdit}>
+            <SubjectFormFields subject={subject} />
+            <div className="modal-actions">
+              <button type="button" className="secondary" onClick={() => setEditing(false)}>取消</button>
+              <button type="submit">保存修改</button>
+            </div>
+          </form>
+        </SubjectDialog>
+      )}
+    </>
   );
 }
 

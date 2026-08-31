@@ -37,9 +37,16 @@ export function StudentForm({ classes, initial, registrationOpen, subjects }: { 
   const [derived, setDerived] = useState({ gender: "", birthDate: "" });
   const [dialog, setDialog] = useState<DialogState | null>(null);
 
-  const departments = useMemo(() => Array.from(new Set(classes.map((item) => item.department || "未分院系"))).sort(), [classes]);
-  const grades = useMemo(() => Array.from(new Set(classes.filter((item) => (item.department || "未分院系") === department).map((item) => item.grade || "未分年级"))).sort((a, b) => b.localeCompare(a, "zh-CN")), [classes, department]);
-  const filteredClasses = useMemo(() => classes.filter((item) => (item.department || "未分院系") === department && (item.grade || "未分年级") === grade), [classes, department, grade]);
+  const departments = useMemo(() => Array.from(new Set(classes.map((item) => item.department?.trim()).filter(Boolean) as string[])).sort(), [classes]);
+  const grades = useMemo(() => Array.from(new Set(classes.filter((item) => item.department?.trim() === department).map((item) => item.grade?.trim() || "未分年级"))).sort((a, b) => b.localeCompare(a, "zh-CN")), [classes, department]);
+  const filteredClasses = useMemo(() => classes.filter((item) => item.department?.trim() === department && (item.grade?.trim() || "未分年级") === grade), [classes, department, grade]);
+
+  const classConfigMessage = useMemo(() => {
+    if (departments.length === 0) return "管理员尚未配置院系和班级，请联系管理员先导入或创建完整班级信息。";
+    if (department && grades.length === 0) return "当前院系尚未配置年级，请联系管理员完善班级信息。";
+    if (department && grade && filteredClasses.length === 0) return "当前院系和年级下尚未配置班级，请联系管理员完善班级信息。";
+    return "";
+  }, [department, departments.length, filteredClasses.length, grade, grades.length]);
 
   useEffect(() => {
     const value = idNumber.toUpperCase();
@@ -54,10 +61,33 @@ export function StudentForm({ classes, initial, registrationOpen, subjects }: { 
     }
   }, [idNumber]);
 
+  useEffect(() => {
+    if (!error) return;
+    const timer = window.setTimeout(() => setError(""), 5000);
+    return () => window.clearTimeout(timer);
+  }, [error]);
+
+  function getClassSelectionError() {
+    if (departments.length === 0) return "管理员尚未配置院系和班级，请联系管理员先导入或创建完整班级信息。";
+    if (!department) return "请先选择院系。";
+    if (grades.length === 0) return "当前院系尚未配置年级，请联系管理员完善班级信息。";
+    if (!grade) return "请选择所在年级。";
+    if (filteredClasses.length === 0) return "当前院系和年级下尚未配置班级，请联系管理员完善班级信息。";
+    if (!classId) return "请选择班级。";
+    return "";
+  }
+
   async function submitForm(form: HTMLFormElement, intent: "draft" | "submit") {
     if (!registrationOpen) {
       setError("报名入口已关闭，不能新增或修改报名信息。");
       return;
+    }
+    if (intent === "submit") {
+      const classSelectionError = getClassSelectionError();
+      if (classSelectionError) {
+        setError(classSelectionError);
+        return;
+      }
     }
     setBusy(true);
     setError("");
@@ -110,6 +140,7 @@ export function StudentForm({ classes, initial, registrationOpen, subjects }: { 
         {queryPassword && <div className="notice"><b>查询密码：{queryPassword}</b><br />后续查询或修改报名信息需要使用“身份证号 + 查询密码”。</div>}
         {!registrationOpen && <div className="notice">报名入口已关闭，当前页面仅供查看，不能保存或提交。</div>}
         {subjects.length === 0 && <div className="error">管理员尚未启用报考科目，暂不能提交报名。</div>}
+        {classConfigMessage && <div className="notice">{classConfigMessage}</div>}
         <input type="hidden" name="classId" value={classId} readOnly />
         <div className="grid grid-2">
           <label>姓名<input name="name" defaultValue={initial?.name || ""} /></label>
@@ -146,7 +177,7 @@ export function StudentForm({ classes, initial, registrationOpen, subjects }: { 
         {dialog?.queryPassword && <div className="notice"><b>查询密码：{dialog.queryPassword}</b></div>}
       </StatusDialog>
       {error && (
-        <div className="form-error-toast" role="alert">
+        <div className="form-error-toast" role="alert" onClick={() => setError("")} title="点击关闭">
           <div>
             <b>提交失败</b>
             <span>{error}</span>
