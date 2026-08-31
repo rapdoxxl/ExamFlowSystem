@@ -2,7 +2,7 @@ export const ADMIN_PATH = "/xxgcxy";
 export const STUDENT_PATH = "/reg";
 export const CLASS_ADMIN_PATH = "/classadmin";
 
-export const APP_NAME = "专项职业能力考核在线报名系统";
+export const APP_NAME = "考试报名信息管理系统";
 export const DEFAULT_PORT = 8018;
 export const DEFAULT_ADMIN_USERNAME = "admin";
 export const DEFAULT_ADMIN_PASSWORD = "admin";
