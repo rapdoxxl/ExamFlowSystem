@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_ANNOUNCEMENT } from "@/lib/constants";
+import { DEFAULT_ANNOUNCEMENT, DEFAULT_PAYMENT_QR_PATH } from "@/lib/constants";
 
 export async function getSettings() {
   return prisma.systemSetting.upsert({
     where: { id: "main" },
     update: {},
-    create: { id: "main", registrationOpen: true, announcement: DEFAULT_ANNOUNCEMENT }
+    create: { id: "main", registrationOpen: true, announcement: DEFAULT_ANNOUNCEMENT, paymentQrPath: DEFAULT_PAYMENT_QR_PATH }
   });
 }
 

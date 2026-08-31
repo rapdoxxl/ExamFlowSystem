@@ -1,5 +1,5 @@
 import { getSettings } from "@/lib/data";
-import { AnnouncementEditor, SettingsSwitch, SubjectCreateForm, SubjectEditButtons } from "@/components/AdminActions";
+import { AnnouncementEditor, PaymentQrUploadForm, SettingsSwitch, SubjectCreateForm, SubjectEditButtons } from "@/components/AdminActions";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { listSubjects } from "@/lib/subjects";
@@ -29,6 +29,13 @@ export default async function SettingsPage() {
           <p className="small">用于维护学生报名首页的醒目提醒，例如考试时间调整、材料准备要求等。</p>
         </div>
         <AnnouncementEditor announcement={settings.announcement || ""} />
+      </div>
+      <div className="card grid">
+        <div>
+          <h2>缴费二维码</h2>
+          <p className="small">用于更新学生端“缴费指南”页面显示的建行商户缴费二维码。</p>
+        </div>
+        <PaymentQrUploadForm version={settings.updatedAt.getTime().toString()} />
       </div>
       <div className="card grid">
         <div>

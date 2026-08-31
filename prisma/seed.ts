@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma";
-import { DEFAULT_ADMIN_PASSWORD, DEFAULT_ADMIN_USERNAME, DEFAULT_ANNOUNCEMENT } from "../lib/constants";
+import { DEFAULT_ADMIN_PASSWORD, DEFAULT_ADMIN_USERNAME, DEFAULT_ANNOUNCEMENT, DEFAULT_PAYMENT_QR_PATH } from "../lib/constants";
 import { hashPassword } from "../lib/password";
 import { ensureDefaultSubjects } from "../lib/subjects";
 
@@ -16,7 +16,7 @@ async function main() {
   await prisma.systemSetting.upsert({
     where: { id: "main" },
     update: {},
-    create: { id: "main", registrationOpen: true, announcement: DEFAULT_ANNOUNCEMENT }
+    create: { id: "main", registrationOpen: true, announcement: DEFAULT_ANNOUNCEMENT, paymentQrPath: DEFAULT_PAYMENT_QR_PATH }
   });
 
   await ensureDefaultSubjects(prisma);

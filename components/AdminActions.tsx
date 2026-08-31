@@ -222,6 +222,44 @@ export function AnnouncementEditor({ announcement }: { announcement: string }) {
   );
 }
 
+export function PaymentQrUploadForm({ version }: { version: string }) {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const input = form.elements.namedItem("paymentQr") as HTMLInputElement | null;
+    if (!input?.files?.[0]) {
+      alert("请先选择缴费二维码图片。");
+      return;
+    }
+    const res = await fetch("/api/admin/payment-qr", { method: "POST", body: new FormData(form) });
+    const json = await res.json();
+    if (!res.ok || !json.ok) {
+      alert(json.message || "二维码上传失败");
+      return;
+    }
+    alert("缴费二维码已更新。");
+    window.location.reload();
+  }
+
+  return (
+    <div className="payment-qr-settings">
+      <div className="payment-qr-preview">
+        <img src={`/api/payment-qr?v=${encodeURIComponent(version)}`} alt="当前缴费二维码" />
+      </div>
+      <form className="grid" onSubmit={submit}>
+        <label>
+          上传新二维码
+          <input name="paymentQr" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" required />
+        </label>
+        <p className="small">支持 JPG、PNG、WebP，文件不超过 2MB。上传后学生端缴费指南会自动使用新二维码。</p>
+        <div className="actions">
+          <button type="submit">更新缴费二维码</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 type SubjectRow = {
   capacity: number;
   enabled: boolean;

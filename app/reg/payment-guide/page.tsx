@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { getSettings } from "@/lib/data";
+
+export const dynamic = "force-dynamic";
 
 const steps = [
   "微信扫描页面中的建行商户缴费二维码，进入缴费页面。",
@@ -9,7 +12,8 @@ const steps = [
   "确认信息无误后完成缴费。"
 ];
 
-export default function PaymentGuidePage() {
+export default async function PaymentGuidePage() {
+  const settings = await getSettings();
   return (
     <main className="container grid">
       <div className="actions no-print">
@@ -25,7 +29,7 @@ export default function PaymentGuidePage() {
           <div className="notice">线上缴费成功后保留缴费成功截图备查即可，不需要另外提交发票。</div>
         </div>
         <div className="payment-qr-card">
-          <img src="/payment-guide/ccb-payment-qr.jpeg" alt="建行商户缴费二维码" />
+          <img src={`/api/payment-qr?v=${settings.updatedAt.getTime()}`} alt="建行商户缴费二维码" />
         </div>
       </section>
     </main>
