@@ -8,11 +8,28 @@ export const DEFAULT_ADMIN_USERNAME = "admin";
 export const DEFAULT_ADMIN_PASSWORD = "admin";
 export const PAYMENT_AMOUNT = 130;
 
-export const SUBJECTS = [
-  "高级：AutoCAD计算机辅助专业设计",
-  "中级：AutoCAD计算机辅助设计",
-  "Protel计算机辅助设计"
+export const DEFAULT_SUBJECTS = [
+  {
+    name: "高级：AutoCAD计算机辅助专业设计",
+    capacity: 320,
+    quotaGroup: "cad",
+    quotaGroupName: "CAD中级+高级"
+  },
+  {
+    name: "中级：AutoCAD计算机辅助设计",
+    capacity: 320,
+    quotaGroup: "cad",
+    quotaGroupName: "CAD中级+高级"
+  },
+  {
+    name: "Protel计算机辅助设计",
+    capacity: 160,
+    quotaGroup: "",
+    quotaGroupName: ""
+  }
 ] as const;
+
+export const SUBJECTS = DEFAULT_SUBJECTS.map((subject) => subject.name);
 
 export const FIXED_EXPORT_VALUES = {
   documentType: "居民身份证",

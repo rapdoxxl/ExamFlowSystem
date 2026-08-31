@@ -184,6 +184,96 @@ export function SettingsSwitch({ open }: { open: boolean }) {
   return <button className={open ? "danger" : ""} onClick={toggle}>{open ? "关闭报名入口" : "开启报名入口"}</button>;
 }
 
+type SubjectRow = {
+  capacity: number;
+  enabled: boolean;
+  id: string;
+  name: string;
+  quotaGroup: string;
+  quotaGroupName: string;
+  sortOrder: number;
+};
+
+export function SubjectCreateForm() {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = Object.fromEntries(new FormData(form).entries());
+    const res = await fetch("/api/admin/subjects", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+    const json = await res.json();
+    if (!res.ok || !json.ok) {
+      alert(json.message || "新增科目失败");
+      return;
+    }
+    alert("科目已新增。");
+    window.location.reload();
+  }
+  return (
+    <form className="subject-form" onSubmit={submit}>
+      <input name="name" placeholder="科目名称" required />
+      <input name="capacity" placeholder="容量" type="number" min="1" required />
+      <input name="quotaGroup" placeholder="共享限额组（选填）" />
+      <input name="quotaGroupName" placeholder="共享组名称（选填）" />
+      <button>新增科目</button>
+    </form>
+  );
+}
+
+export function SubjectEditButtons({ subject, used }: { subject: SubjectRow; used: number }) {
+  async function save(body: Record<string, unknown>) {
+    const res = await fetch("/api/admin/subjects", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: subject.id, ...body }) });
+    const json = await res.json();
+    if (!res.ok || !json.ok) {
+      alert(json.message || "科目保存失败");
+      return;
+    }
+    alert("科目已保存。");
+    window.location.reload();
+  }
+
+  async function edit() {
+    const name = prompt("科目名称", subject.name);
+    if (name === null) return;
+    const capacity = prompt("容量", String(subject.capacity));
+    if (capacity === null) return;
+    const quotaGroup = prompt("共享限额组（选填；同组科目共用容量）", subject.quotaGroup || "");
+    if (quotaGroup === null) return;
+    const quotaGroupName = prompt("共享组名称（选填）", subject.quotaGroupName || "");
+    if (quotaGroupName === null) return;
+    await save({ name, capacity, quotaGroup, quotaGroupName });
+  }
+
+  async function toggle() {
+    if (subject.enabled && !confirm(`确认停用科目“${subject.name}”？停用后学生不能再选择该科目，历史报名数据保留。`)) return;
+    await save({ enabled: !subject.enabled });
+  }
+
+  async function remove() {
+    if (used > 0) {
+      alert("该科目已有报名记录，不能直接删除；系统将改为停用以保留历史数据。");
+      await save({ enabled: false });
+      return;
+    }
+    if (!confirm(`确认删除科目“${subject.name}”？`)) return;
+    const res = await fetch(`/api/admin/subjects?id=${encodeURIComponent(subject.id)}`, { method: "DELETE" });
+    const json = await res.json();
+    if (!res.ok || !json.ok) {
+      alert(json.message || "科目删除失败");
+      return;
+    }
+    alert("科目已删除。");
+    window.location.reload();
+  }
+
+  return (
+    <span className="actions">
+      <button type="button" className="compact secondary" onClick={edit}>编辑</button>
+      <button type="button" className="compact secondary" onClick={toggle}>{subject.enabled ? "停用" : "启用"}</button>
+      <button type="button" className="compact danger" onClick={remove}>删除</button>
+    </span>
+  );
+}
+
 export function ClassEditButtons({ id, department, grade, name, count }: { id: string; department: string; grade: string; name: string; count: number }) {
   async function rename() {
     const nextDepartment = prompt("院系", department || "");
@@ -314,5 +404,5 @@ export function ImportClassesForm() {
     alert(`已从附件/学籍信息导入：${json.data.count} 个班级`);
     window.location.reload();
   }
-  return <div className="grid"><form className="actions" onSubmit={submit}><input name="file" type="file" accept=".xlsx" required /><button>Excel导入班级</button></form><div className="actions"><button type="button" onClick={importStudentStatus}>从附件/学籍信息一键生成班级</button></div></div>;
+  return <div className="grid"><div className="actions"><a className="button secondary" href="/api/admin/import-classes/template">下载班级导入模板</a></div><form className="actions" onSubmit={submit}><input name="file" type="file" accept=".xlsx,.xls" required /><button>Excel导入班级</button></form><p className="small">建议使用模板导入；若自行整理 Excel，请保留“院系 / 所在年级 / 班级”表头，其中“班级”为必填列。</p><div className="actions"><button type="button" onClick={importStudentStatus}>从附件/学籍信息一键生成班级</button></div></div>;
 }

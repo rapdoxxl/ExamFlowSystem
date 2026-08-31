@@ -1,6 +1,7 @@
 import { prisma } from "../lib/prisma";
 import { DEFAULT_ADMIN_PASSWORD, DEFAULT_ADMIN_USERNAME } from "../lib/constants";
 import { hashPassword } from "../lib/password";
+import { ensureDefaultSubjects } from "../lib/subjects";
 
 async function main() {
   const adminUsername = process.env.ADMIN_USERNAME || DEFAULT_ADMIN_USERNAME;
@@ -17,6 +18,8 @@ async function main() {
     update: {},
     create: { id: "main", registrationOpen: true }
   });
+
+  await ensureDefaultSubjects(prisma);
 }
 
 main()

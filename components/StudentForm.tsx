@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { SUBJECTS } from "@/lib/constants";
 import { StatusDialog } from "@/components/StatusDialog";
 
 type ClassItem = { id: string; name: string; department?: string | null; grade?: string | null };
+type SubjectItem = { id: string; name: string };
 type Registration = {
   idNumber?: string;
   name?: string | null;
@@ -24,7 +24,7 @@ type DialogState = {
   title: string;
 };
 
-export function StudentForm({ classes, initial, registrationOpen }: { classes: ClassItem[]; initial?: Registration; registrationOpen: boolean }) {
+export function StudentForm({ classes, initial, registrationOpen, subjects }: { classes: ClassItem[]; initial?: Registration; registrationOpen: boolean; subjects: SubjectItem[] }) {
   const initialClass = classes.find((item) => item.id === initial?.classId);
   const [message, setMessage] = useState<string>("");
   const [error, setError] = useState<string>("");
@@ -71,12 +71,6 @@ export function StudentForm({ classes, initial, registrationOpen }: { classes: C
     if (!json.ok) {
       const errorMessage = json.message || "提交失败";
       setError(errorMessage);
-      if (errorMessage.includes("名额已满")) {
-        setDialog({
-          title: "报名名额已满",
-          message: errorMessage
-        });
-      }
       return;
     }
     if (json.data.queryPassword) {
@@ -114,8 +108,8 @@ export function StudentForm({ classes, initial, registrationOpen }: { classes: C
       <form className="card grid" onSubmit={(event) => { event.preventDefault(); submitForm(event.currentTarget, "draft"); }}>
         {message && <div className="success">{message}</div>}
         {queryPassword && <div className="notice"><b>查询密码：{queryPassword}</b><br />后续查询或修改报名信息需要使用“身份证号 + 查询密码”。</div>}
-        {error && <div className="error">{error}</div>}
         {!registrationOpen && <div className="notice">报名入口已关闭，当前页面仅供查看，不能保存或提交。</div>}
+        {subjects.length === 0 && <div className="error">管理员尚未启用报考科目，暂不能提交报名。</div>}
         <input type="hidden" name="classId" value={classId} readOnly />
         <div className="grid grid-2">
           <label>姓名<input name="name" defaultValue={initial?.name || ""} /></label>
@@ -127,7 +121,7 @@ export function StudentForm({ classes, initial, registrationOpen }: { classes: C
           <label>所在年级<select value={grade} onChange={(event) => { setGrade(event.target.value); setClassId(""); }} disabled={!department}><option value="">请选择年级</option>{grades.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
           <label>班级<select value={classId} onChange={(event) => setClassId(event.target.value)} disabled={!department || !grade}><option value="">请选择班级</option>{filteredClasses.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
           <label>手机号码<input name="phone" defaultValue={initial?.phone || ""} maxLength={11} /></label>
-          <label>报考科目<select name="subject" defaultValue={initial?.subject || ""}><option value="">请选择报考科目</option>{SUBJECTS.map((subject) => <option key={subject} value={subject}>{subject}</option>)}</select></label>
+          <label>报考科目<select name="subject" defaultValue={initial?.subject || ""}><option value="">请选择报考科目</option>{subjects.map((subject) => <option key={subject.id} value={subject.name}>{subject.name}</option>)}</select></label>
         </div>
         <label>家庭地址<textarea name="address" defaultValue={initial?.address || ""} /></label>
         <div className="photo-warning">
@@ -151,6 +145,15 @@ export function StudentForm({ classes, initial, registrationOpen }: { classes: C
         <p>{dialog?.message}</p>
         {dialog?.queryPassword && <div className="notice"><b>查询密码：{dialog.queryPassword}</b></div>}
       </StatusDialog>
+      {error && (
+        <div className="form-error-toast" role="alert">
+          <div>
+            <b>提交失败</b>
+            <span>{error}</span>
+          </div>
+          <button type="button" aria-label="关闭错误提示" onClick={() => setError("")}>&times;</button>
+        </div>
+      )}
     </>
   );
 }

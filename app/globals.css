@@ -171,6 +171,7 @@ th { background: #f8fafc; }
 .student-detail { display: block; color: var(--muted); font-size: 13px; line-height: 1.45; }
 .students-row-actions { min-width: 226px; display: flex; flex-wrap: wrap; gap: 6px; align-content: center; }
 .students-empty { height: 112px; text-align: center; vertical-align: middle !important; color: var(--muted); }
+.subject-form { display: grid; grid-template-columns: minmax(220px, 1fr) 110px minmax(150px, 0.55fr) minmax(170px, 0.65fr) auto; gap: 10px; align-items: end; }
 .photo-warning { background: #fff7ed; border: 2px solid #f97316; color: #7c2d12; border-radius: 12px; padding: 14px 18px; }
 .photo-warning b { display: block; font-size: 18px; margin-bottom: 6px; }
 .photo-warning ul { margin: 0; padding-left: 22px; line-height: 1.8; }
@@ -182,6 +183,11 @@ th { background: #f8fafc; }
 .modal-panel.tone-error { border-top: 5px solid var(--danger); }
 .modal-panel.tone-notice { border-top: 5px solid var(--primary); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+.form-error-toast { position: fixed; left: 50%; bottom: 22px; z-index: 30; width: min(560px, calc(100vw - 28px)); transform: translateX(-50%); display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; border: 1px solid #fecaca; border-left: 6px solid var(--danger); border-radius: 12px; background: #fff; color: #991b1b; box-shadow: 0 18px 45px rgba(15, 23, 42, 0.2); padding: 13px 14px; }
+.form-error-toast div { display: grid; gap: 4px; }
+.form-error-toast b { color: #7f1d1d; }
+.form-error-toast span { line-height: 1.55; }
+.form-error-toast button { flex: 0 0 auto; width: 30px; min-height: 30px; border-radius: 8px; padding: 0; background: #fee2e2; color: #991b1b; font-size: 22px; line-height: 1; }
 .guide-page { display: grid; gap: 18px; }
 .guide-hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); gap: 22px; align-items: center; background: white; border: 1px solid var(--border); border-radius: 14px; padding: 26px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06); }
 .guide-hero h1 { margin: 0 0 12px; }
@@ -208,6 +214,6 @@ th { background: #f8fafc; }
 .payment-step-list li { padding-left: 4px; }
 .payment-qr-card { border: 1px solid var(--border); border-radius: 12px; background: #f8fafc; padding: 12px; }
 .payment-qr-card img { display: block; width: 100%; height: auto; border-radius: 8px; background: white; }
-@media (max-width: 760px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } .container { padding: 16px 10px; } .dashboard-title { display: grid; } .bar-row { grid-template-columns: 1fr; gap: 6px; } .bar-row b { text-align: left; } .donut-wrap { grid-template-columns: 1fr; } .trend-chart { gap: 6px; } .students-heading, .students-search, .students-table-heading { align-items: stretch; flex-direction: column; } .students-heading h1 { font-size: 28px; } .students-search input { max-width: none; } .students-class-combobox, .students-class-filter { width: 100%; } .students-class-options { width: 100%; } .students-reset { margin-left: 0; } .students-tabs { gap: 18px; } .students-toolbar-actions { justify-content: flex-start; } .review-bulk-actions { flex-wrap: wrap; } .payment-bulk-actions { border-left: 0; padding-left: 0; } }
+@media (max-width: 760px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } .container { padding: 16px 10px; } .dashboard-title { display: grid; } .bar-row { grid-template-columns: 1fr; gap: 6px; } .bar-row b { text-align: left; } .donut-wrap { grid-template-columns: 1fr; } .trend-chart { gap: 6px; } .students-heading, .students-search, .students-table-heading { align-items: stretch; flex-direction: column; } .students-heading h1 { font-size: 28px; } .students-search input { max-width: none; } .students-class-combobox, .students-class-filter { width: 100%; } .students-class-options { width: 100%; } .students-reset { margin-left: 0; } .students-tabs { gap: 18px; } .students-toolbar-actions { justify-content: flex-start; } .review-bulk-actions { flex-wrap: wrap; } .payment-bulk-actions { border-left: 0; padding-left: 0; } .subject-form { grid-template-columns: 1fr; } }
 @media (max-width: 900px) { .dashboard-grid, .guide-hero, .guide-step, .payment-guide-shell { grid-template-columns: 1fr; } .dashboard-span-2 { grid-column: auto; } .guide-step-index { width: 36px; height: 36px; font-size: 18px; } }
 @media print { .no-print, .nav { display: none !important; } body { background: white; } .container { max-width: none; padding: 0; } .card, .guide-hero, .guide-step { box-shadow: none; } }

@@ -1,11 +1,17 @@
 import { getSettings } from "@/lib/data";
-import { SettingsSwitch } from "@/components/AdminActions";
+import { SettingsSwitch, SubjectCreateForm, SubjectEditButtons } from "@/components/AdminActions";
 import { requireRole } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { listSubjects } from "@/lib/subjects";
 
 export default async function SettingsPage() {
   const user = await requireRole(["SYSTEM_ADMIN"]);
   if (!user) return <main className="container"><div className="error">无权限，请使用系统管理员账号登录。</div></main>;
-  const settings = await getSettings();
+  const [settings, subjects] = await Promise.all([getSettings(), listSubjects(true)]);
+  const subjectCounts = new Map((await Promise.all(subjects.map(async (subject) => [
+    subject.id,
+    await prisma.registration.count({ where: { subject: subject.name, status: "SUBMITTED" } })
+  ] as const))));
   return (
     <main className="container grid">
       <h1>系统设置</h1>
@@ -13,6 +19,30 @@ export default async function SettingsPage() {
         <p>报名入口当前状态：<b>{settings.registrationOpen ? "开启" : "关闭"}</b></p>
         <p className="small">关闭后学生可以查询，但不能新增或修改报名信息。</p>
         <div className="actions"><SettingsSwitch open={settings.registrationOpen} /></div>
+      </div>
+      <div className="card grid">
+        <div>
+          <h2>科目管理</h2>
+          <p className="small">可新增、编辑、停用或删除报考科目。共享限额组相同的科目共用一个容量，例如 CAD 中级和高级默认共用 320 人容量。</p>
+        </div>
+        <SubjectCreateForm />
+        <div className="table-scroll">
+          <table>
+            <thead><tr><th>状态</th><th>科目名称</th><th>容量</th><th>共享限额组</th><th>已提交人数</th><th>操作</th></tr></thead>
+            <tbody>
+              {subjects.map((subject) => (
+                <tr key={subject.id}>
+                  <td><span className={`status-badge ${subject.enabled ? "status-approved" : "status-draft"}`}>{subject.enabled ? "启用" : "停用"}</span></td>
+                  <td>{subject.name}</td>
+                  <td>{subject.capacity}</td>
+                  <td>{subject.quotaGroup ? `${subject.quotaGroupName || subject.quotaGroup}（${subject.quotaGroup}）` : "单科独立"}</td>
+                  <td>{subjectCounts.get(subject.id) || 0}</td>
+                  <td><SubjectEditButtons subject={subject} used={subjectCounts.get(subject.id) || 0} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </main>
   );

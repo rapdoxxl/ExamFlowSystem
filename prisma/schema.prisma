@@ -83,6 +83,18 @@ model Registration {
   updatedAt         DateTime           @updatedAt
 }
 
+model Subject {
+  id             String   @id @default(cuid())
+  name           String   @unique
+  capacity       Int      @default(1)
+  quotaGroup     String   @default("")
+  quotaGroupName String   @default("")
+  enabled        Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
 model SystemSetting {
   id               String   @id @default("main")
   registrationOpen Boolean  @default(true)

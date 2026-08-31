@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { jsonError, jsonOk } from "@/lib/response";
-import { assertSubjectQuotaAvailable, RegistrationQuotaError } from "@/lib/registrationQuota";
+import { assertSubjectAvailable, assertSubjectQuotaAvailable, InvalidSubjectError, RegistrationQuotaError } from "@/lib/registrationQuota";
 import { isValidChineseIdNumber, parseChineseIdNumber } from "@/lib/validation";
 
 export async function GET(request: NextRequest) {
@@ -88,6 +88,9 @@ export async function PATCH(request: NextRequest) {
     const subject = String(body.subject || "").trim() || null;
     try {
       await prisma.$transaction(async (tx) => {
+        if (subject) {
+          await assertSubjectAvailable(tx, subject);
+        }
         if (registration.status === "SUBMITTED") {
           await assertSubjectQuotaAvailable(tx, subject, id);
         }
@@ -109,6 +112,7 @@ export async function PATCH(request: NextRequest) {
       });
     } catch (error) {
       if (error instanceof RegistrationQuotaError) return jsonError(error.message, 409);
+      if (error instanceof InvalidSubjectError) return jsonError(error.message, 400);
       throw error;
     }
     return jsonOk({});

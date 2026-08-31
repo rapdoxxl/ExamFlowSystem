@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { SUBJECTS } from "@/lib/constants";
 
 const provinceCodes = new Set([
   "11", "12", "13", "14", "15", "21", "22", "23", "31", "32", "33", "34", "35", "36", "37", "41", "42", "43", "44", "45", "46", "50", "51", "52", "53", "54", "61", "62", "63", "64", "65", "71", "81", "82", "91"
@@ -45,7 +44,7 @@ export const registrationBaseSchema = z.object({
   classId: z.string().trim().min(1, "请选择班级"),
   phone: phoneSchema,
   address: z.string().trim().min(5, "家庭地址至少5个字符").max(200, "家庭地址过长"),
-  subject: z.enum(SUBJECTS, { message: "请选择报考科目" })
+  subject: z.string().trim().min(1, "请选择报考科目").max(100, "报考科目过长")
 });
 
 export const draftRegistrationSchema = registrationBaseSchema.partial({ name: true, studentNumber: true, classId: true, phone: true, address: true, subject: true }).extend({

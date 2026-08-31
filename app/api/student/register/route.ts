@@ -6,7 +6,7 @@ import { draftRegistrationSchema, parseChineseIdNumber, submittedRegistrationSch
 import { generateQueryPassword, hashPassword, verifyPassword } from "@/lib/password";
 import { validateAndSavePhoto } from "@/lib/upload/photo";
 import { getCurrentUser, setSession } from "@/lib/auth";
-import { assertSubjectQuotaAvailable, RegistrationQuotaError } from "@/lib/registrationQuota";
+import { assertSubjectAvailable, assertSubjectQuotaAvailable, InvalidSubjectError, RegistrationQuotaError } from "@/lib/registrationQuota";
 
 export async function POST(request: NextRequest) {
   const settings = await getSettings();
@@ -37,10 +37,19 @@ export async function POST(request: NextRequest) {
   if (existing && !sessionMatches && !(await verifyPassword(raw.queryPassword, existing.queryPasswordHash))) return jsonError("查询密码不正确", 403);
 
   const subject = parsed.data.subject ?? existing?.subject ?? null;
+  if (parsed.data.subject || intent === "submit") {
+    try {
+      await assertSubjectAvailable(prisma, subject);
+    } catch (error) {
+      if (error instanceof InvalidSubjectError) return jsonError(error.message, 400);
+      throw error;
+    }
+  }
   if (intent === "submit") {
     try {
       await assertSubjectQuotaAvailable(prisma, subject, existing?.id);
     } catch (error) {
+      if (error instanceof InvalidSubjectError) return jsonError(error.message, 400);
       if (error instanceof RegistrationQuotaError) return jsonError(error.message, 409);
       throw error;
     }
@@ -116,6 +125,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     if (error instanceof RegistrationQuotaError) return jsonError(error.message, 409);
+    if (error instanceof InvalidSubjectError) return jsonError(error.message, 400);
     throw error;
   }
 

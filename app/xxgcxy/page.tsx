@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/data";
 import { requireRole } from "@/lib/auth";
-import { getSubjectQuotaUsed, SUBJECT_QUOTAS } from "@/lib/registrationQuota";
+import { getSubjectQuotaUsed, listSubjectQuotas } from "@/lib/registrationQuota";
 import { buildClassDisplayName } from "@/lib/classes";
 
 const REVIEW_COLORS = {
@@ -55,7 +55,7 @@ function buildDonutGradient(items: Array<{ value: number; color: string }>) {
 export default async function AdminHomePage() {
   const user = await requireRole(["SYSTEM_ADMIN"]);
   if (!user) return <main className="container"><div className="error">无权限，请使用系统管理员账号登录。</div></main>;
-  const [settings, classes, registrations, quotaUsages] = await Promise.all([
+  const [settings, classes, registrations, quotas] = await Promise.all([
     getSettings(),
     prisma.class.count(),
     prisma.registration.findMany({
@@ -68,8 +68,9 @@ export default async function AdminHomePage() {
         class: { select: { department: true, grade: true, name: true } }
       }
     }),
-    Promise.all(SUBJECT_QUOTAS.map(async (quota) => ({ quota, used: await getSubjectQuotaUsed(prisma, quota) })))
+    listSubjectQuotas(prisma)
   ]);
+  const quotaUsages = await Promise.all(quotas.map(async (quota) => ({ quota, used: await getSubjectQuotaUsed(prisma, quota) })));
 
   const total = registrations.length;
   const submittedRows = registrations.filter((item) => item.status === "SUBMITTED");
