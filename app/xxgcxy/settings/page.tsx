@@ -1,5 +1,5 @@
 import { getSettings } from "@/lib/data";
-import { SettingsSwitch, SubjectCreateForm, SubjectEditButtons } from "@/components/AdminActions";
+import { AnnouncementEditor, SettingsSwitch, SubjectCreateForm, SubjectEditButtons } from "@/components/AdminActions";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { listSubjects } from "@/lib/subjects";
@@ -19,6 +19,13 @@ export default async function SettingsPage() {
         <p>报名入口当前状态：<b>{settings.registrationOpen ? "开启" : "关闭"}</b></p>
         <p className="small">关闭后学生可以查询，但不能新增或修改报名信息。</p>
         <div className="actions"><SettingsSwitch open={settings.registrationOpen} /></div>
+      </div>
+      <div className="card grid">
+        <div>
+          <h2>通知公告</h2>
+          <p className="small">用于维护学生报名首页的醒目提醒，例如考试时间调整、材料准备要求等。</p>
+        </div>
+        <AnnouncementEditor announcement={settings.announcement || ""} />
       </div>
       <div className="card grid">
         <div>

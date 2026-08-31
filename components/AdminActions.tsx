@@ -184,6 +184,42 @@ export function SettingsSwitch({ open }: { open: boolean }) {
   return <button className={open ? "danger" : ""} onClick={toggle}>{open ? "关闭报名入口" : "开启报名入口"}</button>;
 }
 
+export function AnnouncementEditor({ announcement }: { announcement: string }) {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const nextAnnouncement = String(new FormData(form).get("announcement") || "").trim();
+    const res = await fetch("/api/admin/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ announcement: nextAnnouncement })
+    });
+    const json = await res.json();
+    if (!res.ok || !json.ok) {
+      alert(json.message || "公告保存失败");
+      return;
+    }
+    alert("通知公告已保存。");
+    window.location.reload();
+  }
+
+  return (
+    <form className="announcement-form" onSubmit={submit}>
+      <label>
+        通知公告
+        <textarea name="announcement" maxLength={500} rows={4} defaultValue={announcement} placeholder="填写后会显示在学生报名首页；留空则不显示公告。" />
+      </label>
+      <div className="announcement-preview">
+        <b>学生端预览</b>
+        <span>{announcement || "当前公告为空，学生报名首页不会显示公告区域。"}</span>
+      </div>
+      <div className="actions">
+        <button type="submit">保存公告</button>
+      </div>
+    </form>
+  );
+}
+
 type SubjectRow = {
   capacity: number;
   enabled: boolean;

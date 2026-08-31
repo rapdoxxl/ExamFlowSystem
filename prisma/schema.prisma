@@ -98,5 +98,6 @@ model Subject {
 model SystemSetting {
   id               String   @id @default("main")
   registrationOpen Boolean  @default(true)
+  announcement     String   @default("⚡ 注意：因原考试时间与端午节冲突，考试时间改为6月27日、6月28日，具体考试安排以准考证为主")
   updatedAt        DateTime @updatedAt
 }

@@ -7,6 +7,7 @@ export const DEFAULT_PORT = 8018;
 export const DEFAULT_ADMIN_USERNAME = "admin";
 export const DEFAULT_ADMIN_PASSWORD = "admin";
 export const PAYMENT_AMOUNT = 130;
+export const DEFAULT_ANNOUNCEMENT = "⚡ 注意：因原考试时间与端午节冲突，考试时间改为6月27日、6月28日，具体考试安排以准考证为主";
 
 export const DEFAULT_SUBJECTS = [
   {

@@ -172,6 +172,10 @@ th { background: #f8fafc; }
 .students-row-actions { min-width: 226px; display: flex; flex-wrap: wrap; gap: 6px; align-content: center; }
 .students-empty { height: 112px; text-align: center; vertical-align: middle !important; color: var(--muted); }
 .subject-form { display: grid; grid-template-columns: minmax(220px, 1fr) 110px minmax(150px, 0.55fr) minmax(170px, 0.65fr) auto; gap: 10px; align-items: end; }
+.announcement-form { display: grid; gap: 12px; }
+.announcement-form textarea { min-height: 112px; line-height: 1.6; }
+.announcement-preview { display: grid; gap: 6px; border: 1px solid #fecaca; border-left: 5px solid var(--danger); border-radius: 10px; background: #fef2f2; color: #991b1b; padding: 12px 14px; white-space: pre-wrap; }
+.announcement-preview b { color: #7f1d1d; }
 .photo-warning { background: #fff7ed; border: 2px solid #f97316; color: #7c2d12; border-radius: 12px; padding: 14px 18px; }
 .photo-warning b { display: block; font-size: 18px; margin-bottom: 6px; }
 .photo-warning ul { margin: 0; padding-left: 22px; line-height: 1.8; }
