@@ -232,11 +232,11 @@ type SubjectRow = {
   sortOrder: number;
 };
 
-function SubjectDialog({ children, onClose, title }: { children: React.ReactNode; onClose: () => void; title: string }) {
+function AdminDialog({ children, onClose, title }: { children: React.ReactNode; onClose: () => void; title: string }) {
   return (
     <div className="modal-backdrop" role="presentation" onClick={onClose}>
-      <section className="modal-panel subject-modal" role="dialog" aria-modal="true" aria-labelledby="subject-dialog-title" onClick={(event) => event.stopPropagation()}>
-        <h2 id="subject-dialog-title">{title}</h2>
+      <section className="modal-panel admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-dialog-title" onClick={(event) => event.stopPropagation()}>
+        <h2 id="admin-dialog-title">{title}</h2>
         {children}
       </section>
     </div>
@@ -277,7 +277,7 @@ export function SubjectCreateForm() {
         <button type="button" onClick={() => setOpen(true)}>新增科目</button>
       </div>
       {open && (
-        <SubjectDialog title="新增科目" onClose={() => setOpen(false)}>
+        <AdminDialog title="新增科目" onClose={() => setOpen(false)}>
           <form className="subject-dialog-form" onSubmit={submit}>
             <SubjectFormFields />
             <div className="modal-actions">
@@ -285,7 +285,7 @@ export function SubjectCreateForm() {
               <button type="submit">保存科目</button>
             </div>
           </form>
-        </SubjectDialog>
+        </AdminDialog>
       )}
     </>
   );
@@ -339,7 +339,7 @@ export function SubjectEditButtons({ subject, used }: { subject: SubjectRow; use
         <button type="button" className="compact danger" onClick={remove}>删除</button>
       </span>
       {editing && (
-        <SubjectDialog title="编辑科目" onClose={() => setEditing(false)}>
+        <AdminDialog title="编辑科目" onClose={() => setEditing(false)}>
           <form className="subject-dialog-form" onSubmit={submitEdit}>
             <SubjectFormFields subject={subject} />
             <div className="modal-actions">
@@ -347,7 +347,7 @@ export function SubjectEditButtons({ subject, used }: { subject: SubjectRow; use
               <button type="submit">保存修改</button>
             </div>
           </form>
-        </SubjectDialog>
+        </AdminDialog>
       )}
     </>
   );
@@ -443,9 +443,12 @@ export function DeleteRegistrationButton({ id, idNumber, name, isClassAdmin }: {
 }
 
 export function ClassCreateForm() {
+  const [open, setOpen] = useState(false);
+
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+    const form = event.currentTarget;
+    const data = Object.fromEntries(new FormData(form).entries());
     const res = await fetch("/api/admin/classes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
     const json = await res.json();
     if (!res.ok || !json.ok) {
@@ -455,7 +458,28 @@ export function ClassCreateForm() {
     alert("班级已创建。");
     window.location.reload();
   }
-  return <form className="actions" onSubmit={submit}><input name="department" placeholder="院系" /><input name="grade" placeholder="所在年级" /><input name="name" placeholder="班级名称" required /><button>新增班级</button></form>;
+  return (
+    <>
+      <div className="actions">
+        <button type="button" onClick={() => setOpen(true)}>新增班级</button>
+      </div>
+      {open && (
+        <AdminDialog title="新增班级" onClose={() => setOpen(false)}>
+          <form className="class-dialog-form" onSubmit={submit}>
+            <div className="class-dialog-grid">
+              <label>院系<input name="department" placeholder="例如：信息工程学院" required /></label>
+              <label>所在年级<input name="grade" placeholder="例如：2025" required /></label>
+              <label>班级<input name="name" placeholder="例如：移动互联2531" required /></label>
+            </div>
+            <div className="modal-actions">
+              <button type="button" className="secondary" onClick={() => setOpen(false)}>取消</button>
+              <button type="submit">保存班级</button>
+            </div>
+          </form>
+        </AdminDialog>
+      )}
+    </>
+  );
 }
 
 export function ImportClassesForm() {

@@ -192,9 +192,11 @@ th { background: #f8fafc; }
 .form-error-toast b { color: #7f1d1d; }
 .form-error-toast span { line-height: 1.55; }
 .form-error-toast button { flex: 0 0 auto; width: 30px; min-height: 30px; border-radius: 8px; padding: 0; background: #fee2e2; color: #991b1b; font-size: 22px; line-height: 1; }
-.modal-panel.subject-modal { width: min(560px, 100%); }
+.modal-panel.admin-modal { width: min(560px, 100%); }
 .subject-dialog-form { display: grid; gap: 14px; }
 .subject-dialog-grid { display: grid; gap: 12px; }
+.class-dialog-form { display: grid; gap: 14px; }
+.class-dialog-grid { display: grid; gap: 12px; }
 .guide-page { display: grid; gap: 18px; }
 .guide-hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); gap: 22px; align-items: center; background: white; border: 1px solid var(--border); border-radius: 14px; padding: 26px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06); }
 .guide-hero h1 { margin: 0 0 12px; }
