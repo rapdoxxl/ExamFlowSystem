@@ -47,8 +47,10 @@ export const registrationBaseSchema = z.object({
   subject: z.string().trim().min(1, "请选择报考科目").max(100, "报考科目过长")
 });
 
-export const draftRegistrationSchema = registrationBaseSchema.partial({ name: true, studentNumber: true, classId: true, phone: true, address: true, subject: true }).extend({
-  idNumber: idNumberSchema
+export const draftRegistrationSchema = z.object({
+  idNumber: idNumberSchema,
+  queryPassword: z.string().trim().optional(),
+  phone: phoneSchema
 });
 
 export const submittedRegistrationSchema = registrationBaseSchema;
