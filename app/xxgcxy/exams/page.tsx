@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireRole } from "@/lib/auth";
 import { database, getActiveExamId } from "@/lib/prisma";
 import { ExamCreateButton } from "@/components/ExamCreateButton";
+import { ExamSwitchButton } from "@/components/ExamSwitchButton";
 import { getStudentRegistrationStatusLabel } from "@/lib/reviewStatus";
 
 export default async function ExamsPage({ searchParams }: { searchParams: Promise<{ examId?: string }> }) {
@@ -20,7 +21,7 @@ export default async function ExamsPage({ searchParams }: { searchParams: Promis
   return <main className="container grid">
     <div className="settings-heading"><div><h1>考试批次</h1><p>当前考试：{exams.find((exam) => exam.id === activeId)?.name}</p></div><ExamCreateButton activeExamId={activeId} /></div>
     <div className="table-scroll"><table><thead><tr><th>考试名称</th><th>状态</th><th>班级数</th><th>报名记录</th><th>已提交</th><th>操作</th></tr></thead><tbody>
-      {counts.map((exam) => <tr key={exam.id}><td>{exam.name}</td><td>{exam.id === activeId ? "当前考试" : "历史存档"}</td><td>{exam.classes}</td><td>{exam.registrations}</td><td>{exam.submitted}</td><td><Link href={`/xxgcxy/exams?examId=${exam.id}`}>查看记录</Link></td></tr>)}
+      {counts.map((exam) => <tr key={exam.id}><td>{exam.name}</td><td>{exam.id === activeId ? "当前考试" : "历史存档"}</td><td>{exam.classes}</td><td>{exam.registrations}</td><td>{exam.submitted}</td><td><div className="actions"><Link href={`/xxgcxy/exams?examId=${exam.id}`}>查看记录</Link>{exam.id !== activeId && <ExamSwitchButton examId={exam.id} activeExamId={activeId} name={exam.name} />}</div></td></tr>)}
     </tbody></table></div>
     {selected && <section className="grid"><h2>{selected.name}</h2><div className="actions">
       <a className="button secondary" href={`/api/admin/exams/export?examId=${selected.id}&type=classes`}>导出班级清单</a>

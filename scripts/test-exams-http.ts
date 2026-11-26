@@ -26,7 +26,7 @@ async function main() {
     assert(ready, logs);
     const admin = await db.user.findFirstOrThrow({ where: { role: "SYSTEM_ADMIN" } });
     const original = await db.registration.findFirstOrThrow();
-    const total = await db.registration.count();
+    const total = await db.registration.count({ where: { examId: original.examId } });
     const encoded = Buffer.from(JSON.stringify({ userId: admin.id, role: admin.role, exp: Date.now() + 600000 })).toString("base64url");
     const signature = crypto.createHmac("sha256", secret).update(encoded).digest("base64url");
     const headers = { cookie: `regsysol_session=${encoded}.${signature}`, "Content-Type": "application/json" };
@@ -56,8 +56,22 @@ async function main() {
     form.set("intent", "draft");
     const saved = await fetch(`${base}/api/student/register`, { method: "POST", body: form });
     assert.equal(saved.status, 200, await saved.clone().text());
-    assert.equal(await db.registration.count({ where: { examId: active } }), total);
+    assert.equal(await db.registration.count({ where: { examId: original.examId } }), total);
     assert.equal(await db.registration.count({ where: { examId: settings.activeExamId } }), 1);
+    await db.systemSetting.update({ where: { id: "main" }, data: { announcement: "本轮测试公告" } });
+    const switchTo = async (examId: string, activeExamId: string) => fetch(`${base}/api/admin/exams`, { method: "PATCH", headers, body: JSON.stringify({ examId, activeExamId }) });
+    assert.equal((await switchTo(original.examId, settings.activeExamId)).status, 200);
+    const oldList = await (await fetch(`${base}/api/admin/registrations`, { headers })).json();
+    assert.equal(oldList.data.length, total);
+    assert.equal((await switchTo(settings.activeExamId, original.examId)).status, 200);
+    const restored = await db.systemSetting.findUniqueOrThrow({ where: { id: "main" } });
+    assert.equal(restored.announcement, "本轮测试公告");
+    assert.equal(restored.registrationOpen, true);
+    const newList = await (await fetch(`${base}/api/admin/registrations`, { headers })).json();
+    assert.equal(newList.data.length, 1);
+    assert.deepEqual(await db.registration.findUnique({ where: { id: original.id } }), original);
+    assert.equal((await switchTo(original.examId, original.examId)).status, 409);
+    console.log("PASS: round-trip batch switching restores records and settings; stale switch rejected; historical data unchanged.");
     console.log("PASS: authorization; history page/export; create exam; stale duplicate blocked; empty lists; closed registration; same student saves new draft; history unchanged.");
   } finally {
     server.kill();
