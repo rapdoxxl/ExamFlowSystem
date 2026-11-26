@@ -3,6 +3,7 @@ import { AnnouncementEditor, PaymentQrUploadForm, SettingsSwitch, SubjectCreateF
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { listSubjects } from "@/lib/subjects";
+import Link from "next/link";
 
 export default async function SettingsPage() {
   const user = await requireRole(["SYSTEM_ADMIN"]);
@@ -34,6 +35,11 @@ export default async function SettingsPage() {
           <span className={`status-badge ${settings.registrationOpen ? "status-approved" : "status-rejected"}`}>当前：{settings.registrationOpen ? "开启" : "关闭"}</span>
           <SettingsSwitch open={settings.registrationOpen} />
         </div>
+      </section>
+
+      <section className="settings-control-card">
+        <div><h2>考试批次</h2><p>开始新考试、查看历史报名记录和导出历史资料。</p></div>
+        <Link className="button" href="/xxgcxy/exams">管理考试批次</Link>
       </section>
 
       <section className="settings-display-section">

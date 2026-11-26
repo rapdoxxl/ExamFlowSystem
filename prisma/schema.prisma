@@ -42,6 +42,7 @@ model User {
 }
 
 model Class {
+  examId        String         @default("legacy")
   id            String         @id @default(cuid())
   department    String         @default("")
   grade         String         @default("")
@@ -51,16 +52,17 @@ model Class {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
-  @@unique([department, grade, name])
+  @@unique([examId, department, grade, name])
 }
 
 model Registration {
+  examId            String             @default("legacy")
   id                String             @id @default(cuid())
   userId            String             @unique
   user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   classId           String?
   class             Class?             @relation(fields: [classId], references: [id], onDelete: SetNull)
-  idNumber          String             @unique
+  idNumber          String
   queryPasswordHash String
   name              String?
   studentNumber     String?
@@ -81,6 +83,13 @@ model Registration {
   submittedAt       DateTime?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  @@unique([examId, idNumber])
+}
+
+model Exam {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
 }
 
 model Subject {
@@ -96,6 +105,7 @@ model Subject {
 }
 
 model SystemSetting {
+  activeExamId     String   @default("legacy")
   id               String   @id @default("main")
   registrationOpen Boolean  @default(true)
   announcement     String   @default("⚡ 注意：因原考试时间与端午节冲突，考试时间改为6月27日、6月28日，具体考试安排以准考证为主")

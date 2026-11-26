@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, getActiveExamId } from "@/lib/prisma";
 import type { UserRole } from "@prisma/client";
 
 const COOKIE_NAME = "regsysol_session";
@@ -75,7 +75,9 @@ export async function getSession() {
 export async function getCurrentUser() {
   const session = await getSession();
   if (!session) return null;
-  return prisma.user.findUnique({ where: { id: session.userId }, include: { registration: true, class: true } });
+  const user = await prisma.user.findUnique({ where: { id: session.userId }, include: { registration: true, class: true } });
+  if (user && user.role !== "SYSTEM_ADMIN" && user.registration?.examId !== await getActiveExamId()) return null;
+  return user;
 }
 
 export async function requireRole(roles: UserRole[]) {

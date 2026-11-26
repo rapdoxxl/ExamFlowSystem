@@ -73,6 +73,7 @@ export async function PATCH(request: NextRequest) {
   if (action === "set-class-admin") {
     const classId = String(body.classId || registration.classId || "");
     if (!classId) return jsonError("请选择班级");
+    if (!await prisma.class.findUnique({ where: { id: classId } })) return jsonError("请选择本轮考试的班级");
     await prisma.user.update({ where: { id: registration.userId }, data: { role: "CLASS_ADMIN", classId } });
     return jsonOk({});
   }
@@ -85,6 +86,7 @@ export async function PATCH(request: NextRequest) {
     if (!isValidChineseIdNumber(idNumber)) return jsonError("身份证号不合法");
     const parsedId = parseChineseIdNumber(idNumber);
     const classId = String(body.classId || "").trim() || null;
+    if (classId && !await prisma.class.findUnique({ where: { id: classId } })) return jsonError("请选择本轮考试的班级");
     const subject = String(body.subject || "").trim() || null;
     try {
       await prisma.$transaction(async (tx) => {
@@ -108,7 +110,7 @@ export async function PATCH(request: NextRequest) {
             subject
           }
         });
-        await tx.user.update({ where: { id: registration.userId }, data: { username: idNumber, classId } });
+        await tx.user.update({ where: { id: registration.userId }, data: { username: `${registration.examId}:${idNumber}`, classId } });
       });
     } catch (error) {
       if (error instanceof RegistrationQuotaError) return jsonError(error.message, 409);

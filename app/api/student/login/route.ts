@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   if (!idNumber.success) return jsonError("身份证号不合法");
   const queryPassword = String(body.queryPassword || "").trim();
   if (!/^\d{6}$/.test(queryPassword)) return jsonError("查询密码应为6位数字");
-  const registration = await prisma.registration.findUnique({ where: { idNumber: idNumber.data }, include: { user: true } });
+  const registration = await prisma.registration.findFirst({ where: { idNumber: idNumber.data }, include: { user: true } });
   if (!registration || !(await verifyPassword(queryPassword, registration.queryPasswordHash))) return jsonError("身份证号或查询密码错误", 403);
   await setSession(registration.userId, registration.user.role);
   return jsonOk({ role: registration.user.role });

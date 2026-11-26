@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma, getActiveExamId } from "@/lib/prisma";
 
 export function buildClassDisplayName(item: { department?: string | null; grade?: string | null; name: string }) {
   return [item.department, item.grade, item.name].filter(Boolean).join("-");
@@ -16,7 +16,7 @@ export async function upsertClass(parts: { department?: string | null; grade?: s
   const data = normalizeClassParts(parts);
   if (!data.name) throw new Error("班级名称不能为空");
   return prisma.class.upsert({
-    where: { department_grade_name: data },
+    where: { examId_department_grade_name: { ...data, examId: await getActiveExamId() } },
     update: {},
     create: data
   });

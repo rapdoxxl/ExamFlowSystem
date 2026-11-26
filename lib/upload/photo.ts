@@ -2,6 +2,7 @@ import path from "node:path";
 import { promises as fs } from "node:fs";
 import sharp from "sharp";
 import { isValidChineseIdNumber } from "@/lib/validation";
+import { getActiveExamId } from "@/lib/prisma";
 
 const PHOTO_DIR = path.join(process.cwd(), "storage", "photos");
 const MAX_PHOTO_SIZE = 20 * 1024;
@@ -16,8 +17,9 @@ export async function validateAndSavePhoto(file: File, idNumber: string) {
   const meta = await sharp(buffer).metadata();
   if (meta.format !== "jpeg") throw new Error("照片真实格式必须为 JPG");
   if (meta.width !== 90 || meta.height !== 110) throw new Error("照片像素必须严格为90px×110px");
-  await fs.mkdir(PHOTO_DIR, { recursive: true });
-  const relativePath = path.join("storage", "photos", `${idNumber}.jpg`).replace(/\\/g, "/");
+  const examId = await getActiveExamId();
+  await fs.mkdir(path.join(PHOTO_DIR, examId), { recursive: true });
+  const relativePath = path.join("storage", "photos", examId, `${idNumber}.jpg`).replace(/\\/g, "/");
   await fs.writeFile(path.join(process.cwd(), relativePath), buffer);
   return relativePath;
 }

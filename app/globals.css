@@ -49,6 +49,7 @@ th { background: #f8fafc; }
 .sort-link.active .sort-indicator { color: var(--primary); }
 .nav { display: flex; gap: 14px; align-items: center; border-bottom: 1px solid var(--border); background: white; padding: 14px 22px; position: sticky; top: 0; z-index: 2; }
 .nav strong { margin-right: auto; }
+.nav { flex-wrap: wrap; }
 .stat { border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: #f8fafc; }
 .stat b { font-size: 28px; display: block; }
 .small { color: var(--muted); font-size: 13px; }

@@ -3,9 +3,11 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { APP_NAME } from "@/lib/constants";
 import { getSettings, listClasses } from "@/lib/data";
+import { database } from "@/lib/prisma";
 
 export default async function RegHomePage() {
   const [settings, classes] = await Promise.all([getSettings(), listClasses()]);
+  const exam = await database.exam.findUnique({ where: { id: settings.activeExamId } });
   return (
     <main
       style={{
@@ -35,6 +37,7 @@ export default async function RegHomePage() {
           <p style={{ fontSize: "1.2rem", fontWeight: 400, color: "#5a6a7e", margin: "0.5rem 0 0 0" }}>
             🎓 学生报名入口
           </p>
+          {exam && <p>{exam.name}</p>}
         </div>
 
         {/* 提示信息 */}

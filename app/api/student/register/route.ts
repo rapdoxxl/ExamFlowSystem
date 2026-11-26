@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, getActiveExamId } from "@/lib/prisma";
 import { getSettings } from "@/lib/data";
 import { jsonError, jsonOk } from "@/lib/response";
 import { draftRegistrationSchema, parseChineseIdNumber, submittedRegistrationSchema } from "@/lib/validation";
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
   const idNumber = parsedData.idNumber;
   const currentUser = await getCurrentUser();
-  const existing = await prisma.registration.findUnique({ where: { idNumber }, include: { user: true } });
+  const existing = await prisma.registration.findFirst({ where: { idNumber }, include: { user: true } });
   const sessionMatches = Boolean(currentUser?.registration?.id === existing?.id);
   if (existing && !sessionMatches && !raw.queryPassword) return jsonError("该身份证号已登记，请使用查询密码进入后修改", 409, { field: "idNumber" });
   if (existing && !sessionMatches && !(await verifyPassword(raw.queryPassword, existing.queryPasswordHash))) return jsonError("查询密码不正确", 403, { field: "queryPassword" });
@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
   const name = intent === "submit" ? parsedData.name || null : draftValue(raw.name, existing?.name);
   const studentNumber = intent === "submit" ? parsedData.studentNumber || null : draftValue(raw.studentNumber, existing?.studentNumber);
   const classId = intent === "submit" ? parsedData.classId || null : draftValue(raw.classId, existing?.classId);
+  if (classId && !await prisma.class.findUnique({ where: { id: classId } })) return jsonError("请选择本轮考试的班级", 400, { field: "classId" });
   const phone = parsedData.phone;
   const address = intent === "submit" ? parsedData.address || null : draftValue(raw.address, existing?.address);
   const subject = intent === "submit" ? parsedData.subject || null : draftValue(raw.subject, existing?.subject);
@@ -146,7 +147,7 @@ export async function POST(request: NextRequest) {
         return updated;
       }
 
-      const user = await tx.user.create({ data: { username: idNumber, role: "STUDENT", classId } });
+      const user = await tx.user.create({ data: { username: `${await getActiveExamId()}:${idNumber}`, role: "STUDENT", classId } });
       return tx.registration.create({
         data: {
           userId: user.id,

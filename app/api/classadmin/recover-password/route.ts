@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   const phone = phoneSchema.safeParse(body.phone);
   if (!idNumber.success || !phone.success) return jsonError("身份信息核验失败，请检查后重试", 403);
 
-  const registration = await prisma.registration.findUnique({ where: { idNumber: idNumber.data }, include: { user: true } });
+  const registration = await prisma.registration.findFirst({ where: { idNumber: idNumber.data }, include: { user: true } });
   if (!registration || registration.user.role !== "CLASS_ADMIN" || registration.phone !== phone.data) {
     return jsonError("身份信息核验失败，请检查后重试", 403);
   }
